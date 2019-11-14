@@ -109,5 +109,6 @@ def preprocess(data_file, vocab_file, label_file, multi_class=94, vocab_size=500
     return x, y
 
 if __name__ == '__main__':
-    dataset = r'd:\Dataset\百度题库\baidu_95.csv'
-    preprocess(dataset, './data/vocab.txt', './data/label_95.txt')
+     # preprocess(r'../data/kkb/baidu_95.csv', '../data/kkb/textcnn/vocab.txt', '../data/kkb/textcnn/label_95.txt')
+     from tensorflow.python.client import device_lib as dl
+     [print(x) for x in dl.list_local_devices()]
