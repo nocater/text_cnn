@@ -91,6 +91,7 @@ if __name__ == '__main__':
     parser.add_argument('-l', '--regularizers_lambda', default=0.01, type=float, help='L2 regulation parameter.(default=0.01)')
     parser.add_argument('-b', '--batch_size', default=64, type=int, help='Mini-Batch size.(default=64)')
     parser.add_argument('-lr', '--learning_rate', default=0.005, type=float, help='Learning rate.(default=0.005)')
+    parser.add_argument('-vocab_size', default=50000, type=int, help='Limit vocab size.(default=50000)')
     parser.add_argument('--epochs', default=1000, type=int, help='Number of epochs.(default=10)')
     parser.add_argument('--fraction_validation', default=0.005, type=float, help='The fraction of validation.(default=0.05)')
     parser.add_argument('--results_dir', default='./results/', type=str, help='The results dir including log, model, vocabulary and some images.(default=./results/)')
@@ -110,4 +111,4 @@ if __name__ == '__main__':
     x_train, y_train = data_helper.preprocess('./data/baidu_95.csv',
                                               './data/vocab.txt',
                                               './data/label_95.txt')
-    train(x_train, y_train, 50000, args.padding_size, os.path.join(args.results_dir, timestamp, 'TextCNN.h5'))
+    train(x_train, y_train, args.vocab_size, args.padding_size, os.path.join(args.results_dir, timestamp, 'TextCNN.h5'))
