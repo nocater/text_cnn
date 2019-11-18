@@ -64,7 +64,7 @@ def train(x_train, y_train, vocab_size, feature_size, save_path):
     model.summary()
     parallel_model = keras.utils.multi_gpu_model(model, gpus=2)
     parallel_model.compile(tf.optimizers.Adam(learning_rate=args.learning_rate), loss='binary_crossentropy',
-                           metrics=[micro_f1, macro_f1])
+                           metrics=[keras.metrics.categorical_accuracy, micro_f1, macro_f1])
     # keras.utils.plot_model(model, show_shapes=True, to_file=os.path.join(args.results_dir, timestamp, "model.pdf"))
     # y_train = tf.one_hot(y_train, args.num_classes)
     # tb_callback = keras.callbacks.TensorBoard(os.path.join(args.results_dir, timestamp, 'log/'),
@@ -108,7 +108,9 @@ if __name__ == '__main__':
     #     data_helper.load_data_and_write_to_file("./data/fenduan_clean.xlsx", "./data/train_data.csv",
     #                                             "./data/test_data.csv", args.test_sample_percentage)
 
-    x_train, y_train = data_helper.preprocess('./data/baidu_95.csv',
-                                              './data/vocab.txt',
-                                              './data/label_95.txt')
+    # x_train, y_train = data_helper.preprocess('./data/baidu_95.csv',
+    #                                           './data/vocab.txt',
+    #                                           './data/label_95.txt')
+
+    x_train, y_train = data_helper.get_data('./data/baidu_95_train_x.npy', './data/baidu_95_train_y.npy')
     train(x_train, y_train, args.vocab_size, args.padding_size, os.path.join(args.results_dir, timestamp, 'TextCNN.h5'))
