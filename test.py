@@ -1,5 +1,5 @@
 import argparse
-from data_helper import preprocess
+from data_helper import preprocess,get_data
 from tensorflow.keras.models import load_model
 import tensorflow as tf
 import numpy as np
@@ -7,6 +7,32 @@ from sklearn.metrics import confusion_matrix, accuracy_score, classification_rep
 from sklearn.utils.multiclass import unique_labels
 import matplotlib.pyplot as plt
 import os
+from keras.metrics import categorical_accuracy
+from pprint import pprint
+
+
+def f1_np(y_true, y_pred):
+    """F1 metric.
+
+    Computes the micro_f1 and macro_f1, metrics for multi-label classification of
+    how many relevant items are selected.
+    """
+    true_positives = np.sum(np.round(np.clip(y_true * y_pred, 0, 1)), axis=0)
+    predicted_positives = np.sum(np.round(np.clip(y_pred, 0, 1)), axis=0)
+    possible_positives = np.sum(np.round(np.clip(y_true, 0, 1)), axis=0)
+
+    """Macro_F1 metric.
+    """
+    precision = true_positives / (predicted_positives + 1e-8)
+    recall = true_positives / (possible_positives + 1e-8)
+    macro_f1 = np.mean(2 * precision * recall / (precision + recall + 1e-8))
+
+    """Micro_F1 metric.
+    """
+    precision = np.sum(true_positives) / np.sum(predicted_positives)
+    recall = np.sum(true_positives) / np.sum(possible_positives)
+    micro_f1 = 2 * precision * recall / (precision + recall + 1e-8)
+    return micro_f1, macro_f1
 
 
 def plot_confusion_matrix(y_true, y_pred, classes,
@@ -65,6 +91,7 @@ def plot_confusion_matrix(y_true, y_pred, classes,
 
 def test(model, x_test, y_test):
     print("Test...")
+    """
     y_pred_one_hot = model.predict(x=x_test, batch_size=1, verbose=1)
     y_pred = tf.math.argmax(y_pred_one_hot, axis=1)
 
@@ -75,18 +102,28 @@ def test(model, x_test, y_test):
     print('Classification report:')
     target_names = ['class {:d}'.format(i) for i in np.arange(args.num_classes)]
     print(classification_report(y_test, y_pred, target_names=target_names, digits=4))
+    """
+    y_pred = model.predict(x=x_test, batch_size=1, verbose=1)
+    metrics = [f1_np]
+    result = {}
+    for func in metrics:
+        result[func.__name__] = func(y_test, y_pred)
+    pprint(result)
+
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='This is the TextCNN test project.')
     parser.add_argument('results_dir', type=str, help='The results dir including log, model, vocabulary and some images.')
-    parser.add_argument('-p', '--padding_size', default=128, type=int, help='Padding size of sentences.(default=128)')
-    parser.add_argument('-c', '--num_classes', default=18, type=int, help='Number of target classes.(default=18)')
+    parser.add_argument('-p', '--padding_size', default=200, type=int, help='Padding size of sentences.(default=200)')
+    parser.add_argument('-c', '--num_classes', default=95, type=int, help='Number of target classes.(default=95)')
     args = parser.parse_args()
     print('Parameters:', args)
 
-    x_test, y_test = preprocess("./data/test_data.csv", os.path.join(args.results_dir, "vocab.json"),
-                                args.padding_size, test=True)
+    # x_test, y_test = preprocess("./data/test_data.csv", os.path.join(args.results_dir, "vocab.json"),
+    #                             args.padding_size, test=True)
+
+    x_test, y_test = get_data('./data/baidu_95_test_x.npy', './data/baidu_95_test_y.npy')
     print("Loading model...")
     model = load_model(os.path.join(args.results_dir, 'TextCNN.h5'))
     test(model, x_test, y_test)
